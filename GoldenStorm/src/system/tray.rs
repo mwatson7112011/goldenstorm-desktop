@@ -4,7 +4,8 @@ use std::thread;
 use std::time::Duration;
 
 use tray_icon::{
-    TrayIcon, TrayIconBuilder, MenuBuilder, MenuItemBuilder, Icon, MessageType,
+    TrayIcon, TrayIconBuilder, Icon,
+    menu::{MenuBuilder, MenuItemBuilder},
 };
 
 use crate::system::logging::{self, LogTarget};
@@ -19,13 +20,15 @@ impl TrayController {
     pub fn new(install_dir: &PathBuf) -> Self {
         let tray = Self::create_tray_icon(install_dir);
 
-        let controller = Self {
+        Self {
             tray: Arc::new(Mutex::new(Some(tray))),
             install_dir: install_dir.clone(),
             flashing: Arc::new(Mutex::new(false)),
-        };
+        }
+    }
 
-        controller
+    fn load_icon_path(path: PathBuf) -> Option<Icon> {
+        Icon::from_path(path, None).ok()
     }
 
     fn create_tray_icon(install_dir: &PathBuf) -> TrayIcon {
@@ -36,30 +39,21 @@ impl TrayController {
             .item(&MenuItemBuilder::new("Exit Agent").build())
             .build();
 
-        let icon_path = install_dir.join("assets").join("icons").join("app.ico");
-        let icon = Icon::from_file(icon_path.to_string_lossy().as_ref(), None)
+        let icon_path = install_dir.join("assets/icons/app.ico");
+        let icon = Self::load_icon_path(icon_path)
             .expect("Failed to load app.ico");
 
         TrayIconBuilder::new()
-            .with_tooltip("GoldenStorm Agent")
-            .with_icon(icon)
+            .with_icon(Some(icon))
+            .with_tooltip(Some("GoldenStorm Agent"))
             .with_menu(Box::new(menu))
             .build()
             .expect("Failed to create tray icon")
     }
 
     fn load_icon(&self, filename: &str) -> Option<Icon> {
-        let path = self.install_dir.join("assets").join("icons").join(filename);
-        match Icon::from_file(path.to_string_lossy().as_ref(), None) {
-            Ok(icon) => Some(icon),
-            Err(e) => {
-                logging::error(
-                    LogTarget::Agent,
-                    &format!("Failed to load icon {:?}: {}", path, e),
-                );
-                None
-            }
-        }
+        let path = self.install_dir.join("assets/icons").join(filename);
+        Self::load_icon_path(path)
     }
 
     pub fn set_normal_icon(&self) {
@@ -72,8 +66,8 @@ impl TrayController {
 
         let mut tray_lock = self.tray.lock().unwrap();
         if let Some(tray) = tray_lock.as_mut() {
-            tray.set_icon(icon.unwrap());
-            tray.set_tooltip("GoldenStorm Agent");
+            tray.set_icon(icon);
+            tray.set_tooltip(Some("GoldenStorm Agent"));
         }
 
         self.stop_flashing();
@@ -89,8 +83,8 @@ impl TrayController {
 
         let mut tray_lock = self.tray.lock().unwrap();
         if let Some(tray) = tray_lock.as_mut() {
-            tray.set_icon(icon.unwrap());
-            tray.set_tooltip("⚠ Severe Weather Alert");
+            tray.set_icon(icon);
+            tray.set_tooltip(Some("⚠ Severe Weather Alert"));
         }
 
         if flash {
@@ -109,11 +103,15 @@ impl TrayController {
         }
 
         thread::spawn(move || {
-            let normal_icon_path = install_dir.join("assets/icons/app.ico");
-            let alert_icon_path = install_dir.join("assets/icons/alert.ico");
+            let normal_icon = Icon::from_path(
+                install_dir.join("assets/icons/app.ico"),
+                None,
+            ).ok();
 
-            let normal_icon = Icon::from_file(normal_icon_path.to_string_lossy().as_ref(), None).ok();
-            let alert_icon = Icon::from_file(alert_icon_path.to_string_lossy().as_ref(), None).ok();
+            let alert_icon = Icon::from_path(
+                install_dir.join("assets/icons/alert.ico"),
+                None,
+            ).ok();
 
             if normal_icon.is_none() || alert_icon.is_none() {
                 return;
@@ -126,9 +124,9 @@ impl TrayController {
                     let mut tray_lock = tray_ref.lock().unwrap();
                     if let Some(tray) = tray_lock.as_mut() {
                         if toggle {
-                            tray.set_icon(alert_icon.clone().unwrap());
+                            tray.set_icon(alert_icon.clone());
                         } else {
-                            tray.set_icon(normal_icon.clone().unwrap());
+                            tray.set_icon(normal_icon.clone());
                         }
                     }
                 }
@@ -144,28 +142,10 @@ impl TrayController {
         *f = false;
     }
 
-    pub fn show_notification(&self, title: &str, message: &str) {
-        logging::warn(
-            LogTarget::Agent,
-            &format!("Tray notification: {} - {}", title, message),
-        );
-
-        let mut tray_lock = self.tray.lock().unwrap();
-        if let Some(tray) = tray_lock.as_mut() {
-            tray.show_message(title, message, MessageType::Info);
-        }
-    }
-
     pub fn notify_emergency(&self, event: &str) {
         logging::warn(LogTarget::Agent, &format!("Emergency tray notify: {}", event));
 
-        let mut tray_lock = self.tray.lock().unwrap();
-        if let Some(tray) = tray_lock.as_mut() {
-            tray.show_message(
-                "⚠ EMERGENCY ALERT ⚠",
-                event,
-                MessageType::Error,
-            );
-        }
+        // tray-icon removed balloon notifications.
+        // You can integrate Windows toast notifications here if desired.
     }
 }

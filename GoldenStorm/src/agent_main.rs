@@ -1,11 +1,8 @@
 //! GoldenStormAgent.exe
 //! Runs the background weather watcher + tray icon.
 
-mod system;
-mod backend;
-
-use system::background_agent::BackgroundAgent;
-use system::logging::{self, LogTarget};
+use crate::system::background_agent::BackgroundAgent;
+use crate::system::logging::{self, LogTarget};
 
 #[tokio::main]
 async fn main() {

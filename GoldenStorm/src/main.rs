@@ -7,12 +7,12 @@ use std::fs;
 use std::path::PathBuf;
 use std::time::Duration;
 
+use tao::dpi::LogicalSize;
 use tao::event::{Event, WindowEvent};
 use tao::event_loop::{ControlFlow, EventLoop};
 use tao::window::{WindowBuilder, Icon};
 
-use wry::application::dpi::LogicalSize;
-use wry::webview::WebViewBuilder;
+use wry::WebViewBuilder;
 
 fn main() {
     // Detect emergency launch mode
@@ -45,7 +45,6 @@ fn main() {
     let index_url = format!("file:///{}", index_path.to_string_lossy());
 
     let webview = WebViewBuilder::new(&window)
-        .unwrap()
         .with_url(&index_url)
         .unwrap()
         .build()
@@ -53,7 +52,9 @@ fn main() {
 
     // If launched due to tornado alert, notify the UI
     if tornado_alert_launch {
-        let _ = webview.evaluate_script("window.dispatchEvent(new CustomEvent('tornadoAlertLaunch'));");
+        let _ = webview.evaluate_script(
+            "window.dispatchEvent(new CustomEvent('tornadoAlertLaunch'));"
+        );
     }
 
     // Spawn background thread to poll JSON state
@@ -110,8 +111,8 @@ fn load_icon(filename: &str) -> Option<Icon> {
         .join("icons")
         .join(filename);
 
-    let icon_bytes = fs::read(path).ok()?;
-    Icon::from_ico(&icon_bytes).ok()
+    let bytes = fs::read(path).ok()?;
+    Icon::from_file(bytes).ok()
 }
 
 /// Installed directory: C:\Program Files\GoldenStorm\

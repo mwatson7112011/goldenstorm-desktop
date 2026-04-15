@@ -101,7 +101,7 @@ impl BackgroundAgent {
     }
 
     async fn poll_once(&mut self) -> Result<(), String> {
-        logging::debug(LogTarget::Agent, "Polling weather + alerts…");
+        logging::info(LogTarget::Agent, "Polling weather + alerts…");
 
         let api_weather = self
             .client

@@ -8,7 +8,7 @@ use crate::system::config::appdata_dir;
 const MAX_LOG_FILES: usize = 5;
 const MAX_LOG_SIZE_BYTES: u64 = 2 * 1024 * 1024; // 2 MB
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum LogTarget {
     Ui,
     Agent,
@@ -97,4 +97,8 @@ pub fn warn(target: LogTarget, msg: &str) {
 
 pub fn error(target: LogTarget, msg: &str) {
     log_line(target, "ERROR", msg);
+}
+
+pub fn debug(target: LogTarget, msg: &str) {
+    log_line(target, "DEBUG", msg);
 }
