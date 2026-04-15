@@ -1,3 +1,5 @@
+!addincludedir "C:\Program Files (x86)\NSIS\Include"
+
 !define APP_NAME "GoldenStorm"
 !define APP_DIR "GoldenStorm"
 !define EXE_NAME "GoldenStorm.exe"
@@ -120,7 +122,6 @@ Section "Uninstall"
     DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "${APP_NAME}Agent"
 
     ; Logs + config (AppData/Config dir)
-    ; Matches Rust config/logging behavior
     Delete "$LOCALAPPDATA\GoldenStorm\*.*"
     Delete "$APPDATA\GoldenStorm\*.*"
     RMDir "$LOCALAPPDATA\GoldenStorm"
