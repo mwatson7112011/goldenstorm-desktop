@@ -14,16 +14,25 @@ tokio = { version = "1.37", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+
+# Tray + Menu System
 tray-icon = "0.10"
+muda = "0.10"
+
+# UI Framework
 tao = "0.28"
 wry = "0.40"
+
+# Notifications
 notify-rust = "4.10"
+
+# Utilities
 chrono = "0.4"
 thiserror = "1.0"
 parking_lot = "0.12"
 urlencoding = "2.1"
 dirs = "5.0"
-
+rand = "0.8"
 
 # -----------------------------------------
 # Binaries

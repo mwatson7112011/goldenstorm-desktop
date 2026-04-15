@@ -1,5 +1,6 @@
 use rand::prelude::*;
 use rand::seq::SliceRandom;
+use rand::rngs::ThreadRng;
 use chrono::Timelike;
 use serde::Deserialize;
 
@@ -35,7 +36,7 @@ pub enum PersonaMode {
 // ---------- UTIL ----------
 
 fn choose<'a>(bank: &'a [&str], rng: &mut ThreadRng) -> &'a str {
-    bank.choose(rng).unwrap_or(&"...")
+    bank.choose(rng).copied().unwrap_or("...")
 }
 
 // ---------- WORD BANKS ----------
@@ -280,7 +281,7 @@ fn generate_time_mood(chaos: ChaosLevel, rng: &mut ThreadRng) -> String {
     let bank = match chaos {
         ChaosLevel::Normal => base_bank,
         ChaosLevel::Chaos => {
-            if rand::random::<bool>() { base_bank } else { chaos_bank }
+            if rng.gen_bool(0.5) { base_bank } else { chaos_bank }
         }
     };
 
@@ -319,6 +320,7 @@ fn generate_persona_stinger(
         PersonaMode::Sheldon => choose(SHELDON_REMARKS, rng).to_string(),
         PersonaMode::Spock => "Logic suggests this weather is suboptimal for carbon-based life forms.".to_string(),
         PersonaMode::Roast => "I've seen better conditions in a dumpster fire.".to_string(),
+        PersonaMode::Apocalypse => choose(APOCALYPSE_STING, rng).to_string(),
         _ => String::new(),
     }
 }

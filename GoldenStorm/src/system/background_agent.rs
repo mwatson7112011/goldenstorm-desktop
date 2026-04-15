@@ -1,12 +1,12 @@
 //! src/system/background_agent.rs
-//! Refactored async BackgroundAgent for GoldenStormAgent.exe
+//! Async BackgroundAgent for GoldenStormAgent.exe with safe tray flashing.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use serde::{Deserialize, Serialize};
 use tokio::fs;
-use tokio::time::{sleep, Duration};
+use tokio::time::{Duration, Interval};
 
 use crate::backend::weather_api::WeatherApiClient;
 use crate::backend::weather_models::{ApiWeatherState, ApiAlert};
@@ -46,6 +46,9 @@ pub struct BackgroundAgent {
     alert_path: PathBuf,
     last_alert: AlertState,
     poll_interval: Duration,
+    flash_interval: Duration,
+    flashing: bool,
+    flash_on_alert_icon: bool,
 }
 
 impl BackgroundAgent {
@@ -82,21 +85,43 @@ impl BackgroundAgent {
             alert_path,
             last_alert,
             poll_interval: Duration::from_secs(30),
+            flash_interval: Duration::from_millis(600),
+            flashing: false,
+            flash_on_alert_icon: true,
         }
     }
 
     pub async fn run(&mut self) {
         logging::info(LogTarget::Agent, "BackgroundAgent run loop started.");
 
+        let mut tick: Interval = tokio::time::interval(self.flash_interval);
+        let mut since_poll = Duration::from_secs(0);
+
         loop {
-            if let Err(e) = self.poll_once().await {
-                logging::error(
-                    LogTarget::Agent,
-                    &format!("Error during poll_once: {}", e),
-                );
+            tick.tick().await;
+
+            // Handle flashing every flash_interval
+            if self.flashing {
+                if self.flash_on_alert_icon {
+                    self.tray.set_alert_icon();
+                } else {
+                    self.tray.set_normal_icon();
+                }
+                self.flash_on_alert_icon = !self.flash_on_alert_icon;
             }
 
-            sleep(self.poll_interval).await;
+            // Accumulate time toward next poll
+            since_poll += self.flash_interval;
+
+            if since_poll >= self.poll_interval {
+                if let Err(e) = self.poll_once().await {
+                    logging::error(
+                        LogTarget::Agent,
+                        &format!("Error during poll_once: {}", e),
+                    );
+                }
+                since_poll = Duration::from_secs(0);
+            }
         }
     }
 
@@ -120,7 +145,6 @@ impl BackgroundAgent {
 
         self.write_json_state(&weather_state, &alert_state).await?;
 
-        // FIX: clone previous alert to avoid borrow conflict
         let prev_alert = self.last_alert.clone();
 
         self.handle_alert_transition(&prev_alert, &alert_state)
@@ -179,6 +203,7 @@ impl BackgroundAgent {
 
     fn map_api_severity(&self, api_sev: &str) -> AlertSeverity {
         let s = api_sev.to_lowercase();
+
         if s.contains("tornado warning") {
             AlertSeverity::TornadoWarning
         } else if s.contains("warning") {
@@ -232,6 +257,7 @@ impl BackgroundAgent {
         prev: &AlertState,
         current: &AlertState,
     ) {
+        // Transition: no alert -> some alert
         if prev.severity == AlertSeverity::None && current.severity != AlertSeverity::None {
             match current.severity {
                 AlertSeverity::TornadoWarning => {
@@ -239,7 +265,7 @@ impl BackgroundAgent {
                         LogTarget::Agent,
                         &format!("New Tornado Warning: {}", current.headline),
                     );
-                    self.tray.set_alert_icon(true);
+                    self.start_flashing();
                     self.tray.show_notification(
                         "🚨 Tornado Warning",
                         &current.headline,
@@ -251,7 +277,7 @@ impl BackgroundAgent {
                         LogTarget::Agent,
                         &format!("New Severe Weather Warning: {}", current.headline),
                     );
-                    self.tray.set_alert_icon(true);
+                    self.start_flashing();
                     self.tray.show_notification(
                         "⚠ Severe Weather Warning",
                         &current.headline,
@@ -262,16 +288,32 @@ impl BackgroundAgent {
                         LogTarget::Agent,
                         &format!("New alert: {}", current.headline),
                     );
-                    self.tray.set_alert_icon(false);
+                    // Non-warning alerts: no flashing, normal icon
+                    self.stop_flashing();
+                    self.tray.set_normal_icon();
                 }
             }
         }
 
+        // Transition: some alert -> no alert
         if prev.severity != AlertSeverity::None && current.severity == AlertSeverity::None {
             logging::info(LogTarget::Agent, "Alerts cleared – returning to normal icon.");
+            self.stop_flashing();
             self.tray.set_normal_icon();
-            self.tray.stop_flashing();
         }
+    }
+
+    fn start_flashing(&mut self) {
+        self.flashing = true;
+        self.flash_on_alert_icon = true;
+        // Ensure we start from alert icon on next tick
+        self.tray.set_alert_icon();
+    }
+
+    fn stop_flashing(&mut self) {
+        self.flashing = false;
+        self.flash_on_alert_icon = true;
+        self.tray.set_normal_icon();
     }
 
     async fn launch_ui_for_tornado(&self) {

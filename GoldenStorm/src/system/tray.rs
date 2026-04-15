@@ -1,17 +1,13 @@
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std::thread;
-use std::time::Duration;
 
 use tray_icon::{TrayIcon, TrayIconBuilder, Icon};
-use muda::{Menu, MenuItem, Submenu};
-
+use muda::{Menu, MenuItem};
 use crate::system::logging::{self, LogTarget};
 
 pub struct TrayController {
     tray: Arc<Mutex<Option<TrayIcon>>>,
     install_dir: PathBuf,
-    flashing: Arc<Mutex<bool>>,
 }
 
 impl TrayController {
@@ -21,7 +17,6 @@ impl TrayController {
         Self {
             tray: Arc::new(Mutex::new(Some(tray))),
             install_dir: install_dir.clone(),
-            flashing: Arc::new(Mutex::new(false)),
         }
     }
 
@@ -31,15 +26,19 @@ impl TrayController {
 
     fn create_tray_icon(install_dir: &PathBuf) -> TrayIcon {
         // Build menu using muda API
-        let mut menu = Menu::new();
+        let menu = {
+            let mut m = Menu::new();
 
-        let open_item = MenuItem::new("Open GoldenStorm", true, None);
-        let pause_item = MenuItem::new("Pause Alerts", true, None);
-        let exit_item = MenuItem::new("Exit Agent", true, None);
+            let open_item = MenuItem::new("Open GoldenStorm", true, None);
+            let pause_item = MenuItem::new("Pause Alerts", true, None);
+            let exit_item = MenuItem::new("Exit Agent", true, None);
 
-        menu.append(&open_item).unwrap();
-        menu.append(&pause_item).unwrap();
-        menu.append(&exit_item).unwrap();
+            m.append(&open_item).unwrap();
+            m.append(&pause_item).unwrap();
+            m.append(&exit_item).unwrap();
+
+            m
+        };
 
         let icon_path = install_dir.join("assets/icons/app.ico");
         let icon = Self::load_icon_path(icon_path)
@@ -68,14 +67,12 @@ impl TrayController {
 
         let mut tray_lock = self.tray.lock().unwrap();
         if let Some(tray) = tray_lock.as_mut() {
-            tray.set_icon(icon.unwrap());
-            tray.set_tooltip("GoldenStorm Agent");
+            tray.set_icon(Some(icon.unwrap()));
+            tray.set_tooltip(Some("GoldenStorm Agent"));
         }
-
-        self.stop_flashing();
     }
 
-    pub fn set_alert_icon(&self, flash: bool) {
+    pub fn set_alert_icon(&self) {
         logging::warn(LogTarget::Agent, "Tray: switching to alert icon.");
 
         let icon = self.load_icon("alert.ico");
@@ -85,75 +82,24 @@ impl TrayController {
 
         let mut tray_lock = self.tray.lock().unwrap();
         if let Some(tray) = tray_lock.as_mut() {
-            tray.set_icon(icon.unwrap());
-            tray.set_tooltip("⚠ Severe Weather Alert");
+            tray.set_icon(Some(icon.unwrap()));
+            tray.set_tooltip(Some("⚠ Severe Weather Alert"));
         }
-
-        if flash {
-            self.start_flashing();
-        }
-    }
-
-    fn start_flashing(&self) {
-        let flashing_flag = self.flashing.clone();
-        let tray_ref = self.tray.clone();
-        let install_dir = self.install_dir.clone();
-
-        {
-            let mut f = flashing_flag.lock().unwrap();
-            *f = true;
-        }
-
-        thread::spawn(move || {
-            let normal_icon = Icon::from_path(
-                install_dir.join("assets/icons/app.ico"),
-                None,
-            ).ok();
-
-            let alert_icon = Icon::from_path(
-                install_dir.join("assets/icons/alert.ico"),
-                None,
-            ).ok();
-
-            if normal_icon.is_none() || alert_icon.is_none() {
-                return;
-            }
-
-            let normal_icon = normal_icon.unwrap();
-            let alert_icon = alert_icon.unwrap();
-
-            let mut toggle = false;
-
-            while *flashing_flag.lock().unwrap() {
-                {
-                    let mut tray_lock = tray_ref.lock().unwrap();
-                    if let Some(tray) = tray_lock.as_mut() {
-                        if toggle {
-                            tray.set_icon(alert_icon.clone());
-                        } else {
-                            tray.set_icon(normal_icon.clone());
-                        }
-                    }
-                }
-
-                toggle = !toggle;
-                thread::sleep(Duration::from_millis(600));
-            }
-        });
-    }
-
-    pub fn stop_flashing(&self) {
-        let mut f = self.flashing.lock().unwrap();
-        *f = false;
     }
 
     pub fn notify_emergency(&self, event: &str) {
         logging::warn(LogTarget::Agent, &format!("Emergency tray notify: {}", event));
 
-        // Use notify-rust for system notifications
         let _ = notify_rust::Notification::new()
             .summary("⚠ EMERGENCY ALERT ⚠")
             .body(event)
+            .show();
+    }
+
+    pub fn show_notification(&self, title: &str, body: &str) {
+        let _ = notify_rust::Notification::new()
+            .summary(title)
+            .body(body)
             .show();
     }
 }
