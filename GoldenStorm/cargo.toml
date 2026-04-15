@@ -1,0 +1,47 @@
+[package]
+name = "goldenstorm"
+version = "1.0.0"
+edition = "2021"
+authors = ["Michael Watson"]
+description = "GoldenStorm Weather System — UI + Background Agent"
+license = "MIT"
+
+# -----------------------------------------
+# Dependencies
+# -----------------------------------------
+[dependencies]
+tokio = { version = "1.37", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+tray-icon = "0.10"
+tao = "0.28"
+wry = "0.40"
+notify-rust = "4.10"
+chrono = "0.4"
+thiserror = "1.0"
+parking_lot = "0.12"
+
+# -----------------------------------------
+# Binaries
+# -----------------------------------------
+
+# UI executable
+[[bin]]
+name = "GoldenStorm"
+path = "src/main.rs"
+
+# Background agent executable
+[[bin]]
+name = "GoldenStormAgent"
+path = "src/agent_main.rs"
+
+# -----------------------------------------
+# Release profile
+# -----------------------------------------
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

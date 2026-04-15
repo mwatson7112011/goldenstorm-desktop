@@ -1,0 +1,35 @@
+name: Build GoldenStorm
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup NSIS
+        uses: joncloud/setup-nsis@v2
+
+      - name: Build with PowerShell script
+        shell: pwsh
+        working-directory: ./GoldenStorm   # ← THIS FIXES EVERYTHING
+        run: ./build.ps1
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: GoldenStorm-Release-Package
+          path: |
+            GoldenStorm/dist/
+            GoldenStorm/GoldenStormSetup_v*.exe
+          if-no-files-found: error

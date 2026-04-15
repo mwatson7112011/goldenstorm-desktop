@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GoldenStorm Weather</title>
+
+    <!-- Your CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Leaflet Radar Dependencies -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Your App Logic -->
+    <script defer src="app.js"></script>
+</head>
+
+<body>
+
+    <!-- ========================= -->
+    <!-- TOP ALERT BANNER -->
+    <!-- ========================= -->
+    <div id="alert-banner" class="hidden"></div>
+
+    <!-- ========================= -->
+    <!-- MAIN LAYOUT (Sidebar + Display) -->
+    <!-- ========================= -->
+    <div id="main-layout">
+
+        <!-- ========================= -->
+        <!-- SIDEBAR CONTROLS -->
+        <!-- ========================= -->
+        <aside id="sidebar">
+
+            <h2 class="section-title">Persona</h2>
+
+            <div id="persona-selector">
+                <button onclick="setPersona('Serious')">Serious</button>
+                <button onclick="setPersona('Sheldon')">Sheldon</button>
+                <button onclick="setPersona('Star Wars')">Star Wars</button>
+                <button onclick="setPersona('Spock')">Spock</button>
+                <button onclick="setPersona('Roast')">Roast</button>
+                <button onclick="setPersona('Apocalypse')">Apocalypse</button>
+            </div>
+
+            <p class="active-label">Active Persona: <span id="persona-label">Serious</span></p>
+
+            <hr>
+
+            <h2 class="section-title">Chaos Mode</h2>
+            <button id="chaos-btn" onclick="toggleChaos()">
+                <span id="chaos-indicator">CHAOS MODE: OFF</span>
+            </button>
+
+            <hr>
+
+            <h2 class="section-title">System</h2>
+            <button id="refresh-btn" onclick="manualRefresh()">Sync NWS Now</button>
+
+        </aside>
+
+        <!-- ========================= -->
+        <!-- MAIN DISPLAY AREA -->
+        <!-- ========================= -->
+        <main id="display">
+
+            <!-- CITY NAME -->
+            <header>
+                <h1 id="city">Detecting...</h1>
+            </header>
+
+            <!-- WEATHER GRID -->
+            <section id="weather-grid">
+
+                <div class="stat-card">
+                    <label>Temperature</label>
+                    <div id="temp">--°F</div>
+                </div>
+
+                <div class="stat-card">
+                    <label>Humidity</label>
+                    <div id="humidity">--%</div>
+                </div>
+
+                <div class="stat-card">
+                    <label>Wind Speed</label>
+                    <div id="wind">-- mph</div>
+                </div>
+
+                <div class="stat-card">
+                    <label>Pressure</label>
+                    <div id="pressure">-- mb</div>
+                </div>
+
+            </section>
+
+            <!-- ========================= -->
+            <!-- RADAR SECTION (NEW) -->
+            <!-- ========================= -->
+            <section id="radar-section">
+                <h2>Live Radar</h2>
+                <div id="radar-map"></div>
+            </section>
+
+            <!-- ROAST OUTPUT -->
+            <section id="roast-box" class="hidden"></section>
+
+        </main>
+    </div>
+
+    <!-- ========================= -->
+    <!-- EMERGENCY OVERLAY -->
+    <!-- ========================= -->
+    <div id="emergency-overlay" class="hidden">
+        <div id="emergency-content">
+            <h1 class="blink">⚠ EMERGENCY ALERT ⚠</h1>
+            <pre id="emergency-message"></pre>
+            <button onclick="closeEmergencyOverlay()">Acknowledge & Mute</button>
+        </div>
+    </div>
+
+</body>
+</html>

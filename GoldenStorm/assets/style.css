@@ -1,0 +1,274 @@
+/* =========================================
+   GoldenStorm - Metallic Gold Theme
+   ========================================= */
+
+:root {
+    --black: #0a0a0a;
+    --black-soft: #111;
+    --panel: #151515;
+    --card: #1b1b1b;
+
+    /* TRUE metallic gold gradient */
+    --gold-light: #f7e7b5;
+    --gold-mid: #d4af37;
+    --gold-dark: #8d6e2f;
+
+    --text-main: #e6e6e6;
+    --danger-red: #ff3b3b;
+    --warning-orange: #ffae42;
+    --chaos-purple: #b36bff;
+}
+
+/* =========================================
+   GLOBAL
+   ========================================= */
+
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--black);
+    color: var(--text-main);
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Metallic gold text utility */
+.gold-text {
+    background: linear-gradient(135deg, var(--gold-light), var(--gold-mid), var(--gold-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* =========================================
+   ALERT BANNER
+   ========================================= */
+
+#alert-banner {
+    width: 100%;
+    padding: 15px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold-mid), var(--gold-light));
+    color: #000;
+
+    border-bottom: 2px solid var(--gold-dark);
+    box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* =========================================
+   MAIN LAYOUT
+   ========================================= */
+
+#main-layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* =========================================
+   SIDEBAR
+   ========================================= */
+
+#sidebar {
+    width: 260px;
+    background: var(--panel);
+    padding: 25px;
+    border-right: 2px solid var(--gold-dark);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.6);
+}
+
+.section-title {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold-mid));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+#persona-selector button {
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 10px;
+    background: var(--card);
+    border: 1px solid var(--gold-dark);
+    color: var(--gold-light);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#persona-selector button:hover {
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold-mid));
+    color: #000;
+}
+
+.active-label {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: var(--gold-light);
+}
+
+#chaos-btn {
+    width: 100%;
+    padding: 10px;
+    background: var(--card);
+    border: 1px solid var(--chaos-purple);
+    color: var(--chaos-purple);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#chaos-btn:hover {
+    background: var(--chaos-purple);
+    color: #000;
+}
+
+#refresh-btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background: transparent;
+    border: 1px solid var(--gold-mid);
+    color: var(--gold-light);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#refresh-btn:hover {
+    background: var(--gold-mid);
+    color: #000;
+}
+
+/* =========================================
+   MAIN DISPLAY
+   ========================================= */
+
+#display {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+}
+
+#city {
+    margin-top: 0;
+    font-size: 2.8rem;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold-mid), var(--gold-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* =========================================
+   WEATHER GRID
+   ========================================= */
+
+#weather-grid {
+    margin-top: 30px;
+    display: grid;
+    grid-template-columns: repeat(2, 200px);
+    gap: 25px;
+}
+
+.stat-card {
+    background: var(--card);
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid var(--gold-dark);
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+}
+
+.stat-card label {
+    font-size: 0.8rem;
+    color: var(--gold-light);
+    text-transform: uppercase;
+}
+
+.stat-card div {
+    margin-top: 8px;
+    font-size: 1.6rem;
+    font-weight: bold;
+}
+
+/* =========================================
+   ROAST BOX
+   ========================================= */
+
+#roast-box {
+    margin-top: 40px;
+    padding: 20px;
+    background: var(--panel);
+    border-left: 4px solid var(--gold-mid);
+    border-radius: 6px;
+    font-style: italic;
+    line-height: 1.6;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.25);
+}
+
+/* =========================================
+   EMERGENCY OVERLAY
+   ========================================= */
+
+#emergency-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(139, 0, 0, 0.92);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+#emergency-content {
+    background: #fff;
+    color: #000;
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    max-width: 80%;
+    box-shadow: 0 0 50px rgba(255, 0, 0, 0.8);
+}
+
+.blink {
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0% { color: red; }
+    50% { color: black; }
+    100% { color: red; }
+}
+
+#emergency-message {
+    text-align: left;
+    white-space: pre-wrap;
+    background: #eee;
+    padding: 15px;
+    border-radius: 5px;
+    font-family: monospace;
+}
+
+#radar-section {
+    margin-top: 20px;
+}
+
+#radar-map {
+    width: 100%;
+    height: 400px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
