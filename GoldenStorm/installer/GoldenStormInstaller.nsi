@@ -11,10 +11,11 @@
 ; --------------------------------------------
 ; Branding / UI
 ; --------------------------------------------
-!define MUI_ICON "assets\icons\app.ico"
-!define MUI_UNICON "assets\icons\app.ico"
+; Paths here are relative to the NSIS script location (installer/)
+!define MUI_ICON "..\assets\icons\app.ico"
+!define MUI_UNICON "..\assets\icons\app.ico"
 
-; (No header image for now – avoids PNG/BMP issues)
+; (No header image for now to avoid format issues)
 
 !define MUI_WELCOMEPAGE_TITLE "Welcome to ${APP_NAME} Setup"
 !define MUI_WELCOMEPAGE_TEXT "This wizard will install ${APP_NAME} on your computer.\r\n\r\nGoldenStorm provides a personality-driven severe weather experience with a dedicated background agent."
@@ -49,7 +50,7 @@ Section "Install"
     File "GoldenStorm.exe"
     File "GoldenStormAgent.exe"
 
-    ; ICONS
+    ; ICONS (paths here are relative to dist/)
     SetOutPath "$INSTDIR\assets\icons"
     File "assets\icons\*.*"
 
