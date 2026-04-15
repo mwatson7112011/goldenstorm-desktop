@@ -17,6 +17,7 @@ use std::time::Duration;
 use tao::dpi::LogicalSize;
 use tao::event::{Event, WindowEvent};
 use tao::event_loop::{ControlFlow, EventLoop};
+use tao::platform::windows::IconExtWindows; // Needed for Icon::from_path
 use tao::window::{WindowBuilder, Icon};
 
 use wry::WebViewBuilder;
@@ -65,7 +66,8 @@ fn main() {
 
     // Spawn background thread to poll JSON state
     {
-        let webview_handle = webview.clone();
+        let window_handle = window.clone(); // WebView cannot be cloned, but Window can
+
         std::thread::spawn(move || {
             let weather_path = base.join("assets/state/latest_weather.json");
             let alert_path = base.join("assets/state/latest_alert.json");
@@ -77,7 +79,7 @@ fn main() {
                         "window.dispatchEvent(new CustomEvent('weatherUpdate', {{ detail: {} }}));",
                         json
                     );
-                    let _ = webview_handle.evaluate_script(&js);
+                    let _ = window_handle.dispatch_script(&js);
                 }
 
                 // Alert JSON
@@ -86,7 +88,7 @@ fn main() {
                         "window.dispatchEvent(new CustomEvent('alertUpdate', {{ detail: {} }}));",
                         json
                     );
-                    let _ = webview_handle.evaluate_script(&js);
+                    let _ = window_handle.dispatch_script(&js);
                 }
 
                 std::thread::sleep(Duration::from_millis(1000));
@@ -117,9 +119,8 @@ fn load_icon(filename: &str) -> Option<Icon> {
         .join("icons")
         .join(filename);
 
-    let bytes = fs::read(path).ok()?;
-    // Tao 0.28 does NOT have Icon::from_file — use from_path instead
-    Icon::from_path(install_base_dir().join("assets/icons").join(filename), None).ok()
+    // Tao 0.28 uses IconExtWindows::from_path
+    Icon::from_path(path, None).ok()
 }
 
 /// Installed directory: C:\Program Files\GoldenStorm\
