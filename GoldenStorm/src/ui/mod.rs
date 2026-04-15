@@ -4,7 +4,7 @@ pub mod ipc_handlers;
 use ipc_handlers::IpcHandlers;
 use state::UiState;
 
-use wry::webview::WebView;
+use wry::WebView; // FIXED
 
 pub fn build_ipc(ui_state: UiState) -> impl Fn(&WebView, String) {
     let handlers = IpcHandlers::new(ui_state);
@@ -13,4 +13,3 @@ pub fn build_ipc(ui_state: UiState) -> impl Fn(&WebView, String) {
         handlers.handle(window, &msg);
     }
 }
-

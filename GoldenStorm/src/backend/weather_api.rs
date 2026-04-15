@@ -4,7 +4,6 @@ use serde::Deserialize;
 use chrono::Local;
 
 // Optional import — not required, but allowed
-use crate::backend::weather_api::NwsAlertResponse;
 
 const USER_AGENT: &str = "GoldenStormAgent/1.0 (contact: example@example.com)";
 

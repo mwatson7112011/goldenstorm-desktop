@@ -3,10 +3,8 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
-use tray_icon::{
-    TrayIcon, TrayIconBuilder, Icon,
-    menu::{MenuBuilder, MenuItemBuilder},
-};
+use tray_icon::{TrayIcon, TrayIconBuilder, Icon};
+use muda::{Menu, MenuItem, Submenu};
 
 use crate::system::logging::{self, LogTarget};
 
@@ -32,20 +30,24 @@ impl TrayController {
     }
 
     fn create_tray_icon(install_dir: &PathBuf) -> TrayIcon {
-        let menu = MenuBuilder::new()
-            .item(&MenuItemBuilder::new("Open GoldenStorm").build())
-            .separator()
-            .item(&MenuItemBuilder::new("Pause Alerts").build())
-            .item(&MenuItemBuilder::new("Exit Agent").build())
-            .build();
+        // Build menu using muda API
+        let mut menu = Menu::new();
+
+        let open_item = MenuItem::new("Open GoldenStorm", true, None);
+        let pause_item = MenuItem::new("Pause Alerts", true, None);
+        let exit_item = MenuItem::new("Exit Agent", true, None);
+
+        menu.append(&open_item).unwrap();
+        menu.append(&pause_item).unwrap();
+        menu.append(&exit_item).unwrap();
 
         let icon_path = install_dir.join("assets/icons/app.ico");
         let icon = Self::load_icon_path(icon_path)
             .expect("Failed to load app.ico");
 
         TrayIconBuilder::new()
-            .with_icon(Some(icon))
-            .with_tooltip(Some("GoldenStorm Agent"))
+            .with_icon(icon)
+            .with_tooltip("GoldenStorm Agent")
             .with_menu(Box::new(menu))
             .build()
             .expect("Failed to create tray icon")
@@ -66,8 +68,8 @@ impl TrayController {
 
         let mut tray_lock = self.tray.lock().unwrap();
         if let Some(tray) = tray_lock.as_mut() {
-            tray.set_icon(icon);
-            tray.set_tooltip(Some("GoldenStorm Agent"));
+            tray.set_icon(icon.unwrap());
+            tray.set_tooltip("GoldenStorm Agent");
         }
 
         self.stop_flashing();
@@ -83,8 +85,8 @@ impl TrayController {
 
         let mut tray_lock = self.tray.lock().unwrap();
         if let Some(tray) = tray_lock.as_mut() {
-            tray.set_icon(icon);
-            tray.set_tooltip(Some("⚠ Severe Weather Alert"));
+            tray.set_icon(icon.unwrap());
+            tray.set_tooltip("⚠ Severe Weather Alert");
         }
 
         if flash {
@@ -117,6 +119,9 @@ impl TrayController {
                 return;
             }
 
+            let normal_icon = normal_icon.unwrap();
+            let alert_icon = alert_icon.unwrap();
+
             let mut toggle = false;
 
             while *flashing_flag.lock().unwrap() {
@@ -145,7 +150,10 @@ impl TrayController {
     pub fn notify_emergency(&self, event: &str) {
         logging::warn(LogTarget::Agent, &format!("Emergency tray notify: {}", event));
 
-        // tray-icon removed balloon notifications.
-        // You can integrate Windows toast notifications here if desired.
+        // Use notify-rust for system notifications
+        let _ = notify_rust::Notification::new()
+            .summary("⚠ EMERGENCY ALERT ⚠")
+            .body(event)
+            .show();
     }
 }

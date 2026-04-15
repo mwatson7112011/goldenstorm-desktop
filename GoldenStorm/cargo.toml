@@ -21,6 +21,9 @@ notify-rust = "4.10"
 chrono = "0.4"
 thiserror = "1.0"
 parking_lot = "0.12"
+urlencoding = "2.1"
+dirs = "5.0"
+
 
 # -----------------------------------------
 # Binaries

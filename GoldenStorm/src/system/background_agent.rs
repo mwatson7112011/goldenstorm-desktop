@@ -120,7 +120,10 @@ impl BackgroundAgent {
 
         self.write_json_state(&weather_state, &alert_state).await?;
 
-        self.handle_alert_transition(&self.last_alert, &alert_state)
+        // FIX: clone previous alert to avoid borrow conflict
+        let prev_alert = self.last_alert.clone();
+
+        self.handle_alert_transition(&prev_alert, &alert_state)
             .await;
 
         self.last_alert = alert_state;

@@ -1,5 +1,5 @@
 use serde_json::Value;
-use wry::webview::WebView;
+use wry::WebView; // FIXED
 
 use crate::ui::state::UiState;
 use crate::system::logging::{self, LogTarget};
@@ -42,8 +42,6 @@ impl IpcHandlers {
 
             "manual_refresh" => {
                 logging::info(LogTarget::Ui, "Manual refresh requested");
-
-                // Tell JS to show a spinner or something
                 let _ = window.evaluate_script("window.manualRefreshAck()");
             }
 
