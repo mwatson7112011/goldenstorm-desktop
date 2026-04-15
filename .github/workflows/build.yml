@@ -18,7 +18,9 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install NSIS
-        run: choco install nsis -y
+        run: |
+          choco install nsis -y
+          echo "C:\Program Files (x86)\NSIS" >> $env:GITHUB_PATH
 
       - name: Build with PowerShell script
         shell: pwsh
@@ -33,4 +35,3 @@ jobs:
             GoldenStorm/dist/
             GoldenStorm/GoldenStormSetup_v*.exe
           if-no-files-found: error
-
