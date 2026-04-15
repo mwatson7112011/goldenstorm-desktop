@@ -2,6 +2,13 @@
 //! Loads the Wry/Tao window, polls JSON state from the agent,
 //! and enters emergency mode when launched with --tornado-alert.
 
+// Declare module folders so Rust can see them
+mod backend;
+mod system;
+mod ui;
+mod utils;
+mod weather;
+
 use std::env;
 use std::fs;
 use std::path::PathBuf;
@@ -46,9 +53,8 @@ fn main() {
 
     let webview = WebViewBuilder::new(&window)
         .with_url(&index_url)
-        .unwrap()
         .build()
-        .unwrap();
+        .expect("Failed to build WebView");
 
     // If launched due to tornado alert, notify the UI
     if tornado_alert_launch {
@@ -112,7 +118,8 @@ fn load_icon(filename: &str) -> Option<Icon> {
         .join(filename);
 
     let bytes = fs::read(path).ok()?;
-    Icon::from_file(bytes).ok()
+    // Tao 0.28 does NOT have Icon::from_file — use from_path instead
+    Icon::from_path(install_base_dir().join("assets/icons").join(filename), None).ok()
 }
 
 /// Installed directory: C:\Program Files\GoldenStorm\
