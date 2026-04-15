@@ -12,17 +12,18 @@ mod weather;
 use std::env;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::mpsc;
 use std::time::Duration;
 
 use tao::dpi::LogicalSize;
 use tao::event::{Event, WindowEvent};
-use tao::event_loop::{ControlFlow, EventLoop, EventLoopProxy};
+use tao::event_loop::{ControlFlow, EventLoop};
 use tao::platform::windows::IconExtWindows;
 use tao::window::{WindowBuilder, Icon};
 
 use wry::WebViewBuilder;
 
-// Messages sent from background thread → main thread
+// Messages from background thread → main thread
 #[derive(Debug, Clone)]
 enum UiMessage {
     WeatherUpdate(String),
@@ -40,9 +41,11 @@ fn main() {
         println!("GoldenStorm UI launched normally.");
     }
 
-    // Build event loop with proxy support
-    let event_loop: EventLoop<UiMessage> = EventLoop::with_user_event();
-    let proxy: EventLoopProxy<UiMessage> = event_loop.create_proxy();
+    // Build event loop (no typed user events in Tao 0.28)
+    let event_loop = EventLoop::new();
+
+    // Create channel for background → UI messages
+    let (tx, rx) = mpsc::channel::<UiMessage>();
 
     // Load window icon
     let window_icon = load_icon("app.ico")
@@ -76,7 +79,7 @@ fn main() {
 
     // Spawn background polling thread (2-second interval)
     {
-        let proxy_clone = proxy.clone();
+        let tx_clone = tx.clone();
         std::thread::spawn(move || {
             let weather_path = base.join("assets/state/latest_weather.json");
             let alert_path = base.join("assets/state/latest_alert.json");
@@ -84,12 +87,12 @@ fn main() {
             loop {
                 // Weather JSON
                 if let Ok(json) = fs::read_to_string(&weather_path) {
-                    let _ = proxy_clone.send_event(UiMessage::WeatherUpdate(json));
+                    let _ = tx_clone.send(UiMessage::WeatherUpdate(json));
                 }
 
                 // Alert JSON
                 if let Ok(json) = fs::read_to_string(&alert_path) {
-                    let _ = proxy_clone.send_event(UiMessage::AlertUpdate(json));
+                    let _ = tx_clone.send(UiMessage::AlertUpdate(json));
                 }
 
                 std::thread::sleep(Duration::from_millis(2000)); // 2-second polling
@@ -101,35 +104,34 @@ fn main() {
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
 
-        match event {
-            // Handle messages from background thread
-            Event::UserEvent(msg) => {
-                match msg {
-                    UiMessage::WeatherUpdate(json) => {
-                        let js = format!(
-                            "window.dispatchEvent(new CustomEvent('weatherUpdate', {{ detail: {} }}));",
-                            json
-                        );
-                        let _ = webview.evaluate_script(&js);
-                    }
-                    UiMessage::AlertUpdate(json) => {
-                        let js = format!(
-                            "window.dispatchEvent(new CustomEvent('alertUpdate', {{ detail: {} }}));",
-                            json
-                        );
-                        let _ = webview.evaluate_script(&js);
-                    }
+        // Handle messages from background thread
+        while let Ok(msg) = rx.try_recv() {
+            match msg {
+                UiMessage::WeatherUpdate(json) => {
+                    let js = format!(
+                        "window.dispatchEvent(new CustomEvent('weatherUpdate', {{ detail: {} }}));",
+                        json
+                    );
+                    let _ = webview.evaluate_script(&js);
+                }
+                UiMessage::AlertUpdate(json) => {
+                    let js = format!(
+                        "window.dispatchEvent(new CustomEvent('alertUpdate', {{ detail: {} }}));",
+                        json
+                    );
+                    let _ = webview.evaluate_script(&js);
                 }
             }
+        }
 
-            // Window close
+        // Handle window close
+        match event {
             Event::WindowEvent {
                 event: WindowEvent::CloseRequested,
                 ..
             } => {
                 *control_flow = ControlFlow::Exit;
             }
-
             _ => {}
         }
     });
