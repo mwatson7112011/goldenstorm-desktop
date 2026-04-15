@@ -1,0 +1,14 @@
+C:\Users\Michael\desktop\goldenstorm\goldenstorm\target\release\deps\thiserror-ab9a4ca4916d6da0.d: C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\lib.rs C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\aserror.rs C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\display.rs C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\var.rs C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\private.rs C:\Users\Michael\desktop\goldenstorm\goldenstorm\target\release\build\thiserror-6a0b2100e7af873b\out/private.rs
+
+C:\Users\Michael\desktop\goldenstorm\goldenstorm\target\release\deps\libthiserror-ab9a4ca4916d6da0.rlib: C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\lib.rs C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\aserror.rs C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\display.rs C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\var.rs C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\private.rs C:\Users\Michael\desktop\goldenstorm\goldenstorm\target\release\build\thiserror-6a0b2100e7af873b\out/private.rs
+
+C:\Users\Michael\desktop\goldenstorm\goldenstorm\target\release\deps\libthiserror-ab9a4ca4916d6da0.rmeta: C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\lib.rs C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\aserror.rs C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\display.rs C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\var.rs C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\private.rs C:\Users\Michael\desktop\goldenstorm\goldenstorm\target\release\build\thiserror-6a0b2100e7af873b\out/private.rs
+
+C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\lib.rs:
+C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\aserror.rs:
+C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\display.rs:
+C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\var.rs:
+C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\private.rs:
+C:\Users\Michael\desktop\goldenstorm\goldenstorm\target\release\build\thiserror-6a0b2100e7af873b\out/private.rs:
+
+# env-dep:OUT_DIR=C:\\Users\\Michael\\desktop\\goldenstorm\\goldenstorm\\target\\release\\build\\thiserror-6a0b2100e7af873b\\out

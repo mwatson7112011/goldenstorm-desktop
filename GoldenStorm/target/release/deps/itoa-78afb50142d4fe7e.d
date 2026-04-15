@@ -1,0 +1,8 @@
+C:\Users\Michael\desktop\goldenstorm\goldenstorm\target\release\deps\itoa-78afb50142d4fe7e.d: C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\itoa-1.0.18\src\lib.rs C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\itoa-1.0.18\src\u128_ext.rs
+
+C:\Users\Michael\desktop\goldenstorm\goldenstorm\target\release\deps\libitoa-78afb50142d4fe7e.rlib: C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\itoa-1.0.18\src\lib.rs C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\itoa-1.0.18\src\u128_ext.rs
+
+C:\Users\Michael\desktop\goldenstorm\goldenstorm\target\release\deps\libitoa-78afb50142d4fe7e.rmeta: C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\itoa-1.0.18\src\lib.rs C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\itoa-1.0.18\src\u128_ext.rs
+
+C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\itoa-1.0.18\src\lib.rs:
+C:\Users\Michael\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\itoa-1.0.18\src\u128_ext.rs:
