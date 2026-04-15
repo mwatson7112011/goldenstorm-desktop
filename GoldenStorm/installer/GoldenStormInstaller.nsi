@@ -4,18 +4,17 @@
 !define APP_DIR "GoldenStorm"
 !define EXE_NAME "GoldenStorm.exe"
 !define AGENT_EXE_NAME "GoldenStormAgent.exe"
-!define APP_VERSION "1.0.0"
+!define APP_VERSION "1.0.0"   ; build.ps1 auto-updates this
 
 !include "MUI2.nsh"
 
 ; --------------------------------------------
 ; Branding / UI
 ; --------------------------------------------
-!define MUI_ICON "..\dist\assets\icons\app.ico"
-!define MUI_UNICON "..\dist\assets\icons\app.ico"
-!define MUI_HEADERIMAGE
-!define MUI_HEADERIMAGE_RIGHT
-!define MUI_HEADERIMAGE_BITMAP "..\dist\assets\icons\icon_256x256.png"
+!define MUI_ICON "assets\icons\app.ico"
+!define MUI_UNICON "assets\icons\app.ico"
+
+; (No header image for now – avoids PNG/BMP issues)
 
 !define MUI_WELCOMEPAGE_TITLE "Welcome to ${APP_NAME} Setup"
 !define MUI_WELCOMEPAGE_TEXT "This wizard will install ${APP_NAME} on your computer.\r\n\r\nGoldenStorm provides a personality-driven severe weather experience with a dedicated background agent."
@@ -46,6 +45,7 @@ RequestExecutionLevel admin
 Section "Install"
     SetOutPath "$INSTDIR"
 
+    ; These exist in dist/ when build.ps1 runs NSIS from dist
     File "GoldenStorm.exe"
     File "GoldenStormAgent.exe"
 
