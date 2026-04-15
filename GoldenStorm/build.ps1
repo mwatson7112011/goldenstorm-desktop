@@ -1,5 +1,5 @@
 # ============================================
-# GoldenStorm Build System (Upgraded Edition)
+# GoldenStorm Build System (Final Corrected Edition)
 # One‑click build for:
 #   - GoldenStorm.exe (UI)
 #   - GoldenStormAgent.exe (background agent)
@@ -30,12 +30,20 @@ function Write-Err($msg) {
 Write-Section "GoldenStorm Build System"
 
 # --------------------------------------------
-# Paths
+# FIXED: Correct project root for both local + CI
 # --------------------------------------------
-$projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-$dist = Join-Path $projectRoot "dist"
-$installer = Join-Path $projectRoot "installer\GoldenStormInstaller.nsi"
-$cargoToml = Join-Path $projectRoot "Cargo.toml"
+# build.ps1 lives in GoldenStorm/, repo root is one level up
+$projectRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
+
+# GoldenStorm project folder
+$gsProject = Join-Path $projectRoot "GoldenStorm"
+
+# dist folder lives inside GoldenStorm/
+$dist = Join-Path $gsProject "dist"
+
+# installer + Cargo.toml inside GoldenStorm/
+$installer = Join-Path $gsProject "installer\GoldenStormInstaller.nsi"
+$cargoToml = Join-Path $gsProject "Cargo.toml"
 
 # --------------------------------------------
 # Extract version from Cargo.toml
@@ -65,14 +73,14 @@ Write-OK "dist folder ready"
 # Build Rust executables
 # --------------------------------------------
 Write-Step "Building Rust project in release mode..."
-cargo build --release
+cargo build --manifest-path "$gsProject\Cargo.toml" --release
 Write-OK "Rust build complete"
 
 # --------------------------------------------
 # Verify executables exist
 # --------------------------------------------
-$exeUI = "$projectRoot\target\release\GoldenStorm.exe"
-$exeAgent = "$projectRoot\target\release\GoldenStormAgent.exe"
+$exeUI = "$gsProject\target\release\GoldenStorm.exe"
+$exeAgent = "$gsProject\target\release\GoldenStormAgent.exe"
 
 if (-not (Test-Path $exeUI)) {
     Write-Err "GoldenStorm.exe missing after build!"
@@ -97,7 +105,7 @@ Write-OK "Executables copied"
 # Copy assets
 # --------------------------------------------
 Write-Step "Copying assets..."
-Copy-Item "$projectRoot\assets" $dist -Recurse
+Copy-Item "$gsProject\assets" $dist -Recurse
 Write-OK "Assets copied"
 
 # --------------------------------------------
@@ -106,11 +114,9 @@ Write-OK "Assets copied"
 Write-Step "Stamping version into NSIS installer script..."
 
 $installerContent = Get-Content $installer
-
-# Hardened regex: matches any spacing, comments, formatting
 $installerContent = $installerContent -replace '^\s*!define\s+APP_VERSION\s+".*"', "!define APP_VERSION `"$version`""
-
 Set-Content -Path $installer -Value $installerContent
+
 Write-OK "Installer version updated"
 
 # --------------------------------------------
@@ -122,7 +128,9 @@ Push-Location $dist
 makensis "..\installer\GoldenStormInstaller.nsi"
 Pop-Location
 
+# --------------------------------------------
 # Rename installer to include version
+# --------------------------------------------
 $installerOut = Join-Path $projectRoot "GoldenStormSetup_v$version.exe"
 Move-Item "$projectRoot\GoldenStormSetup.exe" $installerOut -Force
 
