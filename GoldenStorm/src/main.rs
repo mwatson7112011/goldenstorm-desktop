@@ -16,11 +16,18 @@ use std::time::Duration;
 
 use tao::dpi::LogicalSize;
 use tao::event::{Event, WindowEvent};
-use tao::event_loop::{ControlFlow, EventLoop};
-use tao::platform::windows::IconExtWindows; // Needed for Icon::from_path
+use tao::event_loop::{ControlFlow, EventLoop, EventLoopProxy};
+use tao::platform::windows::IconExtWindows;
 use tao::window::{WindowBuilder, Icon};
 
 use wry::WebViewBuilder;
+
+// Messages sent from background thread → main thread
+#[derive(Debug, Clone)]
+enum UiMessage {
+    WeatherUpdate(String),
+    AlertUpdate(String),
+}
 
 fn main() {
     // Detect emergency launch mode
@@ -33,12 +40,15 @@ fn main() {
         println!("GoldenStorm UI launched normally.");
     }
 
-    // Build the UI window
-    let event_loop = EventLoop::new();
+    // Build event loop with proxy support
+    let event_loop: EventLoop<UiMessage> = EventLoop::with_user_event();
+    let proxy: EventLoopProxy<UiMessage> = event_loop.create_proxy();
 
+    // Load window icon
     let window_icon = load_icon("app.ico")
         .expect("Failed to load app.ico for window icon");
 
+    // Create window
     let window = WindowBuilder::new()
         .with_title("GoldenStorm Weather")
         .with_inner_size(LogicalSize::new(420.0, 720.0))
@@ -47,7 +57,7 @@ fn main() {
         .build(&event_loop)
         .expect("Failed to create window");
 
-    // Load index.html from installed directory
+    // Load index.html
     let base = install_base_dir();
     let index_path = base.join("assets").join("index.html");
     let index_url = format!("file:///{}", index_path.to_string_lossy());
@@ -57,17 +67,16 @@ fn main() {
         .build()
         .expect("Failed to build WebView");
 
-    // If launched due to tornado alert, notify the UI
+    // If launched due to tornado alert, notify UI
     if tornado_alert_launch {
         let _ = webview.evaluate_script(
             "window.dispatchEvent(new CustomEvent('tornadoAlertLaunch'));"
         );
     }
 
-    // Spawn background thread to poll JSON state
+    // Spawn background polling thread (2-second interval)
     {
-        let window_handle = window.clone(); // WebView cannot be cloned, but Window can
-
+        let proxy_clone = proxy.clone();
         std::thread::spawn(move || {
             let weather_path = base.join("assets/state/latest_weather.json");
             let alert_path = base.join("assets/state/latest_alert.json");
@@ -75,38 +84,52 @@ fn main() {
             loop {
                 // Weather JSON
                 if let Ok(json) = fs::read_to_string(&weather_path) {
-                    let js = format!(
-                        "window.dispatchEvent(new CustomEvent('weatherUpdate', {{ detail: {} }}));",
-                        json
-                    );
-                    let _ = window_handle.dispatch_script(&js);
+                    let _ = proxy_clone.send_event(UiMessage::WeatherUpdate(json));
                 }
 
                 // Alert JSON
                 if let Ok(json) = fs::read_to_string(&alert_path) {
-                    let js = format!(
-                        "window.dispatchEvent(new CustomEvent('alertUpdate', {{ detail: {} }}));",
-                        json
-                    );
-                    let _ = window_handle.dispatch_script(&js);
+                    let _ = proxy_clone.send_event(UiMessage::AlertUpdate(json));
                 }
 
-                std::thread::sleep(Duration::from_millis(1000));
+                std::thread::sleep(Duration::from_millis(2000)); // 2-second polling
             }
         });
     }
 
-    // Run event loop
+    // Main event loop
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
 
         match event {
+            // Handle messages from background thread
+            Event::UserEvent(msg) => {
+                match msg {
+                    UiMessage::WeatherUpdate(json) => {
+                        let js = format!(
+                            "window.dispatchEvent(new CustomEvent('weatherUpdate', {{ detail: {} }}));",
+                            json
+                        );
+                        let _ = webview.evaluate_script(&js);
+                    }
+                    UiMessage::AlertUpdate(json) => {
+                        let js = format!(
+                            "window.dispatchEvent(new CustomEvent('alertUpdate', {{ detail: {} }}));",
+                            json
+                        );
+                        let _ = webview.evaluate_script(&js);
+                    }
+                }
+            }
+
+            // Window close
             Event::WindowEvent {
                 event: WindowEvent::CloseRequested,
                 ..
             } => {
                 *control_flow = ControlFlow::Exit;
             }
+
             _ => {}
         }
     });
@@ -119,7 +142,6 @@ fn load_icon(filename: &str) -> Option<Icon> {
         .join("icons")
         .join(filename);
 
-    // Tao 0.28 uses IconExtWindows::from_path
     Icon::from_path(path, None).ok()
 }
 
