@@ -17,12 +17,12 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Setup NSIS
-        uses: joncloud/setup-nsis@v2
+      - name: Install NSIS
+        run: choco install nsis -y
 
       - name: Build with PowerShell script
         shell: pwsh
-        working-directory: ./GoldenStorm   # ← THIS FIXES EVERYTHING
+        working-directory: ./GoldenStorm
         run: ./build.ps1
 
       - name: Upload dist artifacts
@@ -33,3 +33,4 @@ jobs:
             GoldenStorm/dist/
             GoldenStorm/GoldenStormSetup_v*.exe
           if-no-files-found: error
+
